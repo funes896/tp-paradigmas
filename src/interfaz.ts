@@ -1,23 +1,15 @@
 import promptSync from 'prompt-sync';
+import { GestorTareas } from './operaciones';
 import { Tarea, EstadoTarea, DificultadTarea } from './types';
-import {
-  obtenerTodas,
-  obtenerPorEstado,
-  buscarPorTitulo,
-  crearTarea,
-  actualizarTarea
-} from './operaciones';
 
 const prompt = promptSync({ sigint: true });
+const gestor: any = new (GestorTareas as any)();
 
 function formatearDificultad(dificultad: DificultadTarea): string {
   switch (dificultad) {
-    case 'Fácil':
-      return '★☆☆ (Fácil)';
-    case 'Medio':
-      return '★★☆ (Medio)';
-    case 'Difícil':
-      return '★★★ (Difícil)';
+    case 'Fácil': return '★☆☆ (Fácil)';
+    case 'Medio': return '★★☆ (Medio)';
+    case 'Difícil': return '★★★ (Difícil)';
   }
 }
 
@@ -36,7 +28,7 @@ function mostrarDetalle(tarea: Tarea): void {
 
 function editarTareaMenu(tarea: Tarea): void {
   console.log('\n--- EDITAR TAREA (Enter para no modificar) ---');
-  
+
   const nuevoTitulo = prompt(`Título [${tarea.titulo}]: `);
   const nuevaDesc = prompt(`Descripción [${tarea.descripcion ?? 'vacío'}]: `);
 
@@ -55,7 +47,7 @@ function editarTareaMenu(tarea: Tarea): void {
   else if (opcDif === '2') nuevaDif = 'Medio';
   else if (opcDif === '3') nuevaDif = 'Difícil';
 
-  actualizarTarea(tarea.id, {
+  gestor.actualizarTarea(tarea.id, {
     titulo: nuevoTitulo.trim() !== '' ? nuevoTitulo : undefined,
     descripcion: nuevaDesc.trim() !== '' ? nuevaDesc : undefined,
     estado: nuevoEstado,
@@ -108,16 +100,16 @@ export function menuVerTareas(): void {
   const opc = prompt('Elige una opción: ');
   switch (opc) {
     case '1':
-      listarYSeleccionar(obtenerTodas());
+      listarYSeleccionar(gestor.obtenerTodas());
       break;
     case '2':
-      listarYSeleccionar(obtenerPorEstado('Pendiente'));
+      listarYSeleccionar(gestor.obtenerPorEstado('Pendiente'));
       break;
     case '3':
-      listarYSeleccionar(obtenerPorEstado('En Curso'));
+      listarYSeleccionar(gestor.obtenerPorEstado('En Curso'));
       break;
     case '4':
-      listarYSeleccionar(obtenerPorEstado('Terminada'));
+      listarYSeleccionar(gestor.obtenerPorEstado('Terminada'));
       break;
     case '0':
       break;
@@ -133,7 +125,7 @@ export function menuBuscarTarea(): void {
     console.log('Búsqueda cancelada.');
     return;
   }
-  const resultados = buscarPorTitulo(clave);
+  const resultados = gestor.buscarPorTitulo(clave);
   listarYSeleccionar(resultados);
 }
 
@@ -153,7 +145,7 @@ export function menuAgregarTarea(): void {
   if (opcDif === '2') dificultad = 'Medio';
   else if (opcDif === '3') dificultad = 'Difícil';
 
-  crearTarea(
+  gestor.crearTarea(
     titulo.trim(),
     descripcion.trim() !== '' ? descripcion.trim() : undefined,
     'Pendiente',
